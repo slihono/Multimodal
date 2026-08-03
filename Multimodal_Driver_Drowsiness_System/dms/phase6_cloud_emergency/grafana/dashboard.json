@@ -1,0 +1,75 @@
+{
+  "title": "Driver Monitoring - Fleet Dashboard",
+  "timezone": "browser",
+  "schemaVersion": 39,
+  "refresh": "5s",
+  "panels": [
+    {
+      "id": 1,
+      "title": "Drowsiness Score (live)",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 0 },
+      "targets": [
+        { "expr": "driver_monitoring_drowsiness_score{vehicle_id=\"$vehicle_id\"}" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "yellow", "value": 0.35 },
+              { "color": "orange", "value": 0.6 },
+              { "color": "red", "value": 0.8 }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "id": 2,
+      "title": "Health Anomaly Score (live)",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 0 },
+      "targets": [
+        { "expr": "driver_monitoring_health_anomaly_score{vehicle_id=\"$vehicle_id\"}" }
+      ]
+    },
+    {
+      "id": 3,
+      "title": "Distraction Score (live)",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 8 },
+      "targets": [
+        { "expr": "driver_monitoring_distraction_score{vehicle_id=\"$vehicle_id\"}" }
+      ]
+    },
+    {
+      "id": 4,
+      "title": "Vehicle Location",
+      "type": "geomap",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 8 },
+      "targets": [
+        { "expr": "driver_monitoring_gps{vehicle_id=\"$vehicle_id\"}" }
+      ]
+    },
+    {
+      "id": 5,
+      "title": "Fleet Average Drowsiness (last 24h)",
+      "type": "bargauge",
+      "gridPos": { "h": 8, "w": 24, "x": 0, "y": 16 },
+      "targets": [
+        { "expr": "avg_over_time(driver_monitoring_drowsiness_score[24h])" }
+      ]
+    }
+  ],
+  "templating": {
+    "list": [
+      {
+        "name": "vehicle_id",
+        "type": "query",
+        "query": "label_values(driver_monitoring_drowsiness_score, vehicle_id)"
+      }
+    ]
+  }
+}

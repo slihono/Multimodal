@@ -1,0 +1,38 @@
+# Multimodal Driver Drowsiness & Health Monitoring System
+# Install with: pip install -r requirements.txt --break-system-packages
+
+# Phase 1 - Vision / Face Mesh
+opencv-python
+mediapipe
+numpy
+
+# Phase 2 - Physiological signal processing
+pyserial
+paho-mqtt
+scipy
+
+# Phase 3 - Advanced CV
+ultralytics       # YOLOv8
+torch
+torchvision
+pillow
+
+# Phase 4 - Fusion model
+# (torch already listed above)
+
+# Phase 5 - Alert system (all optional; code falls back to simulation
+# if these aren't installed / hardware isn't present)
+pyttsx3           # offline TTS
+smbus2            # I2C (haptic driver)
+rpi_ws281x        # WS2812B LED strip
+luma.oled         # SSD1306 OLED display
+
+# Phase 6 - Cloud & emergency
+fastapi
+uvicorn
+pydantic
+requests
+pynmea2           # GPS NMEA parsing
+
+# Phase 7 - Validation
+scikit-learn
