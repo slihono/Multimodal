@@ -148,14 +148,70 @@ class DrowsinessEstimator:
                         cv2.FONT_HERSHEY_SIMPLEX, 1.0, (0, 0, 255), 3)
         return frame_bgr
 
+def run_realsense(estimator, headless=False):
+    import pyrealsense2 as rs
 
+    pipeline = rs.pipeline()
+    config = rs.config()
+    config.enable_stream(rs.stream.depth, 640, 480, rs.format.z16, 30)
+    config.enable_stream(rs.stream.color, 640, 480, rs.format.bgr8, 30)
+
+    align = rs.align(rs.stream.color)
+    pipeline.start(config)
+
+    print("[*] D435 RealSense running. Press 'q' to quit.")
+
+    try:
+        while True:
+            frames = pipeline.wait_for_frames()
+            frames = align.process(frames)
+
+            color_frame = frames.get_color_frame()
+            depth_frame = frames.get_depth_frame()
+
+            if not color_frame or not depth_frame:
+                continue
+
+            color_image = np.asanyarray(color_frame.get_data())
+            depth_image = np.asanyarray(depth_frame.get_data())
+
+            vf = estimator.process(color_image)
+
+            if headless:
+                print(
+                    f"t={vf.timestamp:.2f} ear={vf.ear:.3f} "
+                    f"perclos={vf.perclos:.3f} "
+                    f"face_found={vf.face_found}"
+                )
+                continue
+
+            annotated_rgb = estimator.draw_overlay(color_image.copy(), vf)
+            depth_display = cv2.applyColorMap(
+                cv2.convertScaleAbs(depth_image, alpha=0.03),
+                cv2.COLORMAP_JET,
+            )
+
+            display = np.hstack((annotated_rgb, depth_display))
+            cv2.imshow("D435 — Driver monitoring | Depth", display)
+
+            if cv2.waitKey(1) & 0xFF == ord("q"):
+                break
+    finally:
+        pipeline.stop()
+        cv2.destroyAllWindows()
 def main():
     ap = argparse.ArgumentParser(description="Phase 1: Face Mesh EAR/PERCLOS drowsiness estimator")
     ap.add_argument("--source", default="0", help="Camera index or video file path")
     ap.add_argument("--headless", action="store_true", help="Don't open a display window")
     args = ap.parse_args()
+    if args.realsense:
+        estimator = DrowsinessEstimator()
+        run_realsense(estimator, headless=args.headless)
+        return
 
     source = int(args.source) if args.source.isdigit() else args.source
+    ap.add_argument("--realsense", action="store_true",
+                help="Use Intel RealSense D435 RGB and depth streams")
     cap = cv2.VideoCapture(source)
     if not cap.isOpened():
         print(f"[!] Could not open video source: {source}")
