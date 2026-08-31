@@ -55,7 +55,7 @@ class PhysioEncoder(nn.Module):
     used here since biosignals benefit from local temporal convolution
     (capturing pulse waveform shape) more than pure attention at this
     embedding size."""
-    FEATURE_DIM = 8
+    FEATURE_DIM = 9
 
     def __init__(self, embed_dim: int = 256):
         super().__init__()
